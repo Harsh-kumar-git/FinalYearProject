@@ -1,144 +1,79 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './User_Subscribe.css';
 
 const User_Subscribe = () => {
-  
+  const [searchTerm, setSearchTerm] = useState('');
+
   const availableGroups = [
-    { 
-      id: 1, 
-      name: 'Credit Card Group', 
-      description: 'Access credit card reports, analytics, and customer insights',
-      icon: '💳' 
-    },
-    { 
-      id: 2, 
-      name: 'Risk Compliance Group', 
-      description: 'Regulatory compliance reports and risk assessment documents',
-      icon: '⚖️' 
-    },
-    { 
-      id: 3, 
-      name: 'Loan Group', 
-      description: 'Loan portfolio management and approval metrics',
-      icon: '🏦' 
-    },
-    { 
-      id: 4, 
-      name: 'Investment Group', 
-      description: 'Investment strategies, market analysis, and portfolio reports',
-      icon: '📈' 
-    },
-    { 
-      id: 5, 
-      name: 'Customer Service Group', 
-      description: 'Customer satisfaction surveys and service quality reports',
-      icon: '👥' 
-    },
-    { 
-      id: 6, 
-      name: 'Savings Account Group', 
-      description: 'Savings account analytics and customer retention data',
-      icon: '💰' 
-    },
-    { 
-      id: 7, 
-      name: 'Fraud Detection Group', 
-      description: 'Fraud prevention reports and security incident analysis',
-      icon: '🔒' 
-    },
-    { 
-      id: 8, 
-      name: 'Digital Banking Group', 
-      description: 'Mobile and online banking usage statistics and trends',
-      icon: '📱' 
-    },
-    { 
-      id: 9, 
-      name: 'Treasury Group', 
-      description: 'Treasury operations, liquidity management, and cash flow reports',
-      icon: '🏛️' 
-    },
-    { 
-      id: 10, 
-      name: 'Operations Group', 
-      description: 'Operational efficiency metrics and process improvement reports',
-      icon: '⚙️' 
-    },
-    { 
-      id: 11, 
-      name: 'Mortgage Group', 
-      description: 'Mortgage lending reports and housing market analysis',
-      icon: '🏠' 
-    },
-    { 
-      id: 12, 
-      name: 'Wealth Management Group', 
-      description: 'High net worth client portfolios and wealth advisory reports',
-      icon: '💎' 
-    },
+    { id: 1, name: 'Treasury Group', description: 'Access to treasury and cash management reports', icon: '🏛️' },
+    { id: 2, name: 'Operations Group', description: 'Operational reports and metrics', icon: '⚙️' },
+    { id: 3, name: 'Compliance Group', description: 'Regulatory and compliance reports', icon: '📋' },
+    { id: 4, name: 'Analytics Group', description: 'Business intelligence and analytics', icon: '📊' },
+    { id: 5, name: 'Marketing Group', description: 'Marketing campaigns and customer insights', icon: '📢' },
+    { id: 6, name: 'HR Group', description: 'Human resources and employee data', icon: '👔' },
+    { id: 7, name: 'IT Security Group', description: 'Security reports and incident tracking', icon: '🔐' },
+    { id: 8, name: 'Finance Group', description: 'Financial statements and budgets', icon: '💼' },
   ];
 
-  const [searchQuery, setSearchQuery] = useState('');
-
-  
   const filteredGroups = availableGroups.filter(group =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase())
+    group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    group.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSubscribe = (groupId, groupName) => {
-  
-    console.log('Subscribing to group:', groupId);
+  const handleSubscribe = (groupName) => {
     alert(`Subscription request sent for: ${groupName}`);
   };
 
   return (
-    <div className="subscribe-container">
-      
-      <div className="subscribe-header">
-        <h2>Explore Groups</h2>
-        <p>Browse and subscribe to groups to access their reports</p>
+    <div className="container-fluid p-4">
+      <div className="mb-4">
+        <h2 className="fw-bold text-dark mb-1">Subscribe to Groups</h2>
+        <p className="text-muted">Request access to additional report groups</p>
       </div>
 
-      
-      <div className="subscribe-search">
-        <div className="input-group subscribe-search-box">
-          <span className="input-group-text">
-            <i className="bi bi-search"></i>
-          </span>
-          <input 
-            type="text" 
-            className="form-control" 
-            placeholder="Search groups by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      <div className="card mb-4 shadow-sm">
+        <div className="card-body">
+          <div className="input-group">
+            <span className="input-group-text">
+              <i className="bi bi-search"></i>
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search for groups..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button 
+                className="btn btn-outline-secondary"
+                onClick={() => setSearchTerm('')}
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      
-      <div className="subscribe-results-count">
-        <small>
-          Showing {filteredGroups.length} of {availableGroups.length} groups
-        </small>
-      </div>
-
-      
       <div className="row g-4">
         {filteredGroups.length > 0 ? (
           filteredGroups.map((group) => (
             <div key={group.id} className="col-md-6 col-lg-4">
-              <div className="card shadow-sm subscribe-group-card">
+              <div className="card h-100 shadow-sm group-subscription-card">
                 <div className="card-body">
-                  <div className="subscribe-group-icon">
-                    {group.icon}
+                  <div className="d-flex align-items-start mb-3">
+                    <div className="group-icon-large me-3">{group.icon}</div>
+                    <div className="flex-grow-1">
+                      <h5 className="card-title mb-1">{group.name}</h5>
+                      <p className="card-text text-muted small">{group.description}</p>
+                    </div>
                   </div>
-                  <h5 className="subscribe-group-title">{group.name}</h5>
-                  <p className="subscribe-group-description">{group.description}</p>
                   <button 
-                    className="btn btn-primary subscribe-btn"
-                    onClick={() => handleSubscribe(group.id, group.name)}
+                    className="btn btn-primary w-100"
+                    onClick={() => handleSubscribe(group.name)}
                   >
+                    <i className="bi bi-plus-circle me-2"></i>
                     Subscribe
                   </button>
                 </div>
@@ -147,11 +82,30 @@ const User_Subscribe = () => {
           ))
         ) : (
           <div className="col-12">
-            <div className="alert alert-info subscribe-no-results">
-              No groups found matching "{searchQuery}"
+            <div className="card shadow-sm">
+              <div className="card-body text-center py-5">
+                <i className="bi bi-inbox display-1 text-muted"></i>
+                <h5 className="mt-3 text-muted">No groups found</h5>
+                <p className="text-muted">Try adjusting your search terms</p>
+              </div>
             </div>
           </div>
         )}
+      </div>
+
+      <div className="card mt-4 shadow-sm bg-light">
+        <div className="card-body">
+          <h6 className="card-title">
+            <i className="bi bi-info-circle me-2"></i>
+            Subscription Information
+          </h6>
+          <ul className="mb-0">
+            <li>Subscription requests are reviewed by administrators</li>
+            <li>You will receive a notification once your request is processed</li>
+            <li>Access is typically granted within 24-48 hours</li>
+            <li>You can track your subscription status in the "Subscription Status" page</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

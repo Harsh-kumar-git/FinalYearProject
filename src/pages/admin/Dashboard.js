@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Dashboard.css';
 
-function Dashboard() {
+const Dashboard = () => {
   const [requests] = useState([
     { id: 1, bankId: 'BNK001', username: 'john.doe', adGroup: 'Finance_Team', status: 'Pending' },
     { id: 2, bankId: 'BNK002', username: 'jane.smith', adGroup: 'IT_Admin', status: 'Pending' },
@@ -34,98 +34,98 @@ function Dashboard() {
 
   return (
     <div className="container-fluid p-4">
-        <div className="mb-4">
-          <h2 className="fw-bold text-dark mb-1">Dashboard</h2>
-          <p className="text-muted">Access Request Management</p>
-        </div>
+      <div className="mb-4">
+        <h2 className="fw-bold text-dark mb-1">Dashboard</h2>
+        <p className="text-muted">Access Request Management</p>
+      </div>
 
-        <div className="row g-4 mb-4">
-          <div className="col-md-4">
-            <div className="card border">
-              <div className="card-body d-flex align-items-center gap-3">
-                <div className="stat-icon bg-primary">
-                  <i className="bi bi-people"></i>
-                </div>
-                <div>
-                  <h3 className="fs-2 fw-bold mb-0 text-dark">150</h3>
-                  <p className="mb-0 text-muted small">Total Users</p>
-                </div>
+      <div className="row g-4 mb-4">
+        <div className="col-md-4">
+          <div className="card border">
+            <div className="card-body d-flex align-items-center gap-3">
+              <div className="stat-icon bg-primary">
+                <i className="bi bi-people"></i>
               </div>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="card border">
-              <div className="card-body d-flex align-items-center gap-3">
-                <div className="stat-icon bg-success">
-                  <i className="bi bi-diagram-3"></i>
-                </div>
-                <div>
-                  <h3 className="fs-2 fw-bold mb-0 text-dark">24</h3>
-                  <p className="mb-0 text-muted small">Total AD Groups</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="card border">
-              <div className="card-body d-flex align-items-center gap-3">
-                <div className="stat-icon bg-warning">
-                  <i className="bi bi-file-earmark-text"></i>
-                </div>
-                <div>
-                  <h3 className="fs-2 fw-bold mb-0 text-dark">342</h3>
-                  <p className="mb-0 text-muted small">Total Files</p>
-                </div>
+              <div>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">150</h3>
+                <p className="mb-0 text-muted small">Total Users</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card border rounded">
-          <div className="card-header bg-primary text-white">
-            <h4 className="mb-0 fw-bold">Requests</h4>
+        <div className="col-md-4">
+          <div className="card border">
+            <div className="card-body d-flex align-items-center gap-3">
+              <div className="stat-icon bg-warning">
+                <i className="bi bi-clock-history"></i>
+              </div>
+              <div>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">{requests.length}</h3>
+                <p className="mb-0 text-muted small">Pending Requests</p>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="bg-light p-3 border-bottom d-flex gap-2 align-items-center flex-wrap">
-            <div className="search-box">
-              <i className="bi bi-search"></i>
+        <div className="col-md-4">
+          <div className="card border">
+            <div className="card-body d-flex align-items-center gap-3">
+              <div className="stat-icon bg-success">
+                <i className="bi bi-check-circle"></i>
+              </div>
+              <div>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">45</h3>
+                <p className="mb-0 text-muted small">Approved Today</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card shadow-sm">
+        <div className="card-header bg-light">
+          <h5 className="mb-3">Filter Requests</h5>
+          <div className="row g-3 align-items-end">
+            <div className="col-md-5">
+              <label className="form-label small text-muted">Search</label>
               <input
                 type="text"
                 className="form-control"
-                placeholder="Enter Keyword " 
+                placeholder="Search by ID, username, or AD group..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ height: '40px' }}
               />
             </div>
-            
-            <select 
-              className="form-select"
-              value={filterAdGroup}
-              onChange={(e) => setFilterAdGroup(e.target.value)}
-              style={{ flex: '1', minWidth: '180px', height: '40px' }}
-            >
-              <option value="">All AD Groups</option>
-              {uniqueAdGroups.map(group => (
-                <option key={group} value={group}>{group}</option>
-              ))}
-            </select>
-
-            <button 
-              className="btn btn-outline-secondary"
-              onClick={() => {
-                setSearchTerm('');
-                setFilterAdGroup('');
-              }}
-              style={{ height: '40px', whiteSpace: 'nowrap' }}
-            >
-              <i className="bi bi-x-circle me-2"></i>
-              Clear Filters
-            </button>
+            <div className="col-md-5">
+              <label className="form-label small text-muted">Filter by AD Group</label>
+              <select
+                className="form-select"
+                value={filterAdGroup}
+                onChange={(e) => setFilterAdGroup(e.target.value)}
+              >
+                <option value="">All Groups</option>
+                {uniqueAdGroups.map((group, index) => (
+                  <option key={index} value={group}>{group}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-2">
+              <button
+                className="btn btn-outline-secondary w-100"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterAdGroup('');
+                }}
+              >
+                <i className="bi bi-x-circle me-2"></i>
+                Clear
+              </button>
+            </div>
           </div>
+        </div>
 
+        <div className="card-body p-0">
           <div className="table-responsive">
             <table className="table table-hover mb-0">
               <thead className="bg-light">
@@ -173,7 +173,8 @@ function Dashboard() {
           </div>
         </div>
       </div>
+    </div>
   );
-}
+};
 
 export default Dashboard;

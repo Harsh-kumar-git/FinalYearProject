@@ -1,11 +1,9 @@
-// notification.js
 import React from 'react';
 import './notification.css';
 
 const Notification = ({ reports, isOpen, onClose }) => {
   if (!isOpen) return null;
 
-  // Filter only pending reports
   const pendingReports = reports.filter(report => report.status === 'Pending');
 
   return (

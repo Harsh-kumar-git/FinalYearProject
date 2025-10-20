@@ -3,10 +3,9 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./Sidebar.css";
 
-export default function Sidebar() {
+const Sidebar = () => {
   const { userRole } = useAuth();
 
-  // Define navigation items for each role
   const navigationItems = {
     admin: [
       {
@@ -51,7 +50,6 @@ export default function Sidebar() {
     ]
   };
 
-  // Get navigation items based on current user role
   const currentNavItems = navigationItems[userRole] || [];
 
   return (
@@ -79,4 +77,6 @@ export default function Sidebar() {
       </div>
     </aside>
   );
-}
+};
+
+export default Sidebar;

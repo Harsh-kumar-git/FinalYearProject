@@ -14,7 +14,7 @@
     margin-bottom: 0.5rem;
     font-size: 2rem;
     font-weight: 600;
-    color: #212529;
+    color: #0066cc;
   }
   .subscription-status-subtitle {
     margin: 0;
@@ -33,11 +33,16 @@
   .subscription-table {
     margin-bottom: 0;
   }
+  .subscription-table thead {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
+  }
   .subscription-table thead th {
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.875rem;
     letter-spacing: 0.5px;
+    color: white !important;
+    border-color: #1976D2 !important;
   }
   .subscription-table tbody tr {
     cursor: pointer;
@@ -58,33 +63,33 @@
   }
 
   .status-pending {
-    background-color: #FFF3CD;
-    color: #856404;
-    border: 1px solid #FFC107;
+    background-color: #FFF8E1;
+    color: #F57C00;
+    border: 1px solid #FFB300;
   }
   .status-approved {
-    background-color: #D4EDDA;
-    color: #155724;
-    border: 1px solid #28A745;
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #4CAF50;
   }
   .status-rejected {
-    background-color: #F8D7DA;
-    color: #721C24;
-    border: 1px solid #DC3545;
+    background-color: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #EF5350;
   }
   
   .subscription-summary {
-    background: white;
+    background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
     padding: 0.5rem;
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 2px solid #dee2e6;
+    border: 2px solid #4CAF50;
     transition: all 0.3s ease;
   }
   .subscription-summary:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
     transform: translateY(-2px);
-    border-color: #2cb10b;
+    border-color: #2196F3;
   }
   .summary-item {
     display: inline-block;
@@ -92,13 +97,15 @@
     margin-bottom: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    background: #f8f9fa;
+    background: white;
     transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
   }
   .summary-item:hover {
-    background: #e9ecef;
+    background: #f1f8ff;
     transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+    border-color: #2196F3;
   }
   .summary-label {
     font-weight: 600;
@@ -110,28 +117,28 @@
   }
   
   .summary-item:nth-child(1) .summary-label {
-    color: #495057;
+    color: #1976D2;
   }
   .summary-item:nth-child(1) .summary-value {
-    color: #212529;
+    color: #0D47A1;
   }
   .summary-item:nth-child(2) .summary-label {
-    color: #856404;
+    color: #F57C00;
   }
   .summary-item:nth-child(2) .summary-value {
-    color: #FFA500;
+    color: #E65100;
   }
   .summary-item:nth-child(3) .summary-label {
-    color: #155724;
+    color: #388E3C;
   }
   .summary-item:nth-child(3) .summary-value {
-    color: #28A745;
+    color: #1B5E20;
   }
   .summary-item:nth-child(4) .summary-label {
-    color: #721C24;
+    color: #D32F2F;
   }
   .summary-item:nth-child(4) .summary-value {
-    color: #DC3545;
+    color: #B71C1C;
   }
   
   
@@ -170,58 +177,58 @@
   
   
   .filter-btn.filter-all {
-    color: #495057;
-    border-color: #495057;
+    color: #1976D2;
+    border-color: #2196F3;
   }
   
   .filter-btn.filter-all:hover {
-    background: #f8f9fa;
+    background: #E3F2FD;
   }
   
   .filter-btn.filter-all.active {
-    background: #495057;
+    background: #2196F3;
     color: white;
   }
   .filter-btn.filter-pending {
-    color: #856404;
-    border-color: #FFC107;
+    color: #F57C00;
+    border-color: #FFB300;
   }
   
   .filter-btn.filter-pending:hover {
-    background: #FFF3CD;
+    background: #FFF8E1;
   }
   
   .filter-btn.filter-pending.active {
-    background: #FFC107;
-    color: #856404;
+    background: #FFB300;
+    color: white;
   }
   
   
   .filter-btn.filter-approved {
-    color: #155724;
-    border-color: #28A745;
+    color: #2E7D32;
+    border-color: #4CAF50;
   }
   
   .filter-btn.filter-approved:hover {
-    background: #D4EDDA;
+    background: #E8F5E9;
   }
   
   .filter-btn.filter-approved.active {
-    background: #28A745;
+    background: #4CAF50;
     color: white;
   }
 
   .filter-btn.filter-rejected {
-    color: #721C24;
-    border-color: #DC3545;
+    color: #C62828;
+    border-color: #EF5350;
   }
   
   .filter-btn.filter-rejected:hover {
-    background: #F8D7DA;
+    background: #FFEBEE;
   }
   
   .filter-btn.filter-rejected.active {
-    background: #DC3545;
+    background: #EF5350;
     color: white;
   }
   

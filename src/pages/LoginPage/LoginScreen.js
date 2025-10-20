@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './LoginScreen.css';
-// Using existing images as placeholders until actual images are added
-import scgbs from '../../Data/Images/download.png'; // Placeholder for Scgbs.png
-// import eyeOpenIcon from '../../Data/Images/eye-open.png';
-// import eyeClosedIcon from '../../Data/Images/eye-closed.png';
+import scgbs from '../../Data/Images/download.png';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -38,28 +35,15 @@ const LoginScreen = () => {
       return;
     }
 
-    // Check each role
-    if (email === credentials.user.email) {
-      if (password === credentials.user.password) {
-        login(email, 'user');
-        navigate('/User/Dashboard');
-      } else {
-        alert('Invalid password for user.');
-      }
-    } else if (email === credentials.admin.email) {
-      if (password === credentials.admin.password) {
-        login(email, 'admin');
-        navigate('/Admin/Dashboard');
-      } else {
-        alert('Invalid password for admin.');
-      }
-    } else if (email === credentials.operations.email) {
-      if (password === credentials.operations.password) {
-        login(email, 'operations');
-        navigate('/OpsPage/OpsPage');
-      } else {
-        alert('Invalid password for operations.');
-      }
+    if (email === credentials.user.email && password === credentials.user.password) {
+      login(email, 'user');
+      navigate('/User/Dashboard');
+    } else if (email === credentials.admin.email && password === credentials.admin.password) {
+      login(email, 'admin');
+      navigate('/Admin/Dashboard');
+    } else if (email === credentials.operations.email && password === credentials.operations.password) {
+      login(email, 'operations');
+      navigate('/OpsPage/OpsPage');
     } else {
       alert('Login Failed: Invalid email or password.');
     }
@@ -78,24 +62,25 @@ const LoginScreen = () => {
         </div>
 
         <form onSubmit={handleLogin}>
-          {/* EMAIL FIELD */}
           <div className="form-group mb-3">
             <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              className="form-control"
-              id="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="email-input-wrapper">
+              <input
+                type="email"
+                className="form-control email-input"
+                id="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <div className="email-spacer"></div>
+            </div>
           </div>
 
-          {/* PASSWORD FIELD WITH SHOW TOGGLE */}
           <div className="form-group mb-4">
             <label htmlFor="password">Password</label>
-            <div className="input-group">
+            <div className="password-field-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
                 className="form-control"
@@ -105,25 +90,23 @@ const LoginScreen = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              {/* EYE ICON BUTTON */}
-              <span
-                className="password-toggle-icon-text"
+              <button
+                type="button"
+                className="password-toggle-btn-outside"
                 onClick={togglePasswordVisibility}
-                title="Toggle Password Visibility"
+                aria-label="Toggle password visibility"
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </span>
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
             </div>
           </div>
 
-          {/* FORGOT PASSWORD */}
           <div className="d-flex justify-content-end mb-4">
             <a href="/forgot-password" className="forgot-link">
               Forgot Password?
             </a>
           </div>
 
-          {/* LOGIN BUTTON */}
           <div className="d-grid gap-2">
             <button type="submit" className="btn btn-primary btn-lg login-button">
               Log In

@@ -1,141 +1,152 @@
 import React, { useState } from 'react';
 import './Subscription_Status.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Subscription_Status = () => {
-  
-  const [subscriptionRequests] = useState([
-    { id: 1, groupName: 'Credit Card Group', dateRequested: '2025-10-01', status: 'approved' },
-    { id: 2, groupName: 'Risk Compliance Group', dateRequested: '2025-10-05', status: 'pending' },
-    { id: 3, groupName: 'Loan Group', dateRequested: '2025-10-08', status: 'rejected' },
-    { id: 4, groupName: 'Investment Group', dateRequested: '2025-10-10', status: 'approved' },
-    { id: 5, groupName: 'Digital Banking Group', dateRequested: '2025-10-12', status: 'pending' },
-    { id: 6, groupName: 'Treasury Group', dateRequested: '2025-10-13', status: 'pending' },
-    { id: 7, groupName: 'Operations Group', dateRequested: '2025-10-14', status: 'rejected' },
-    { id: 8, groupName: 'Fraud Detection Group', dateRequested: '2025-10-15', status: 'approved' },
-  ]);
+  const [filter, setFilter] = useState('All');
 
-  const [activeFilter, setActiveFilter] = useState('all');
+  const subscriptions = [
+    { id: 1, groupName: 'Credit Card Group', status: 'Approved', requestDate: '2025-01-15', approvalDate: '2025-01-16' },
+    { id: 2, groupName: 'Risk Compliance Group', status: 'Pending', requestDate: '2025-02-10', approvalDate: '-' },
+    { id: 3, groupName: 'Loan Group', status: 'Approved', requestDate: '2025-01-20', approvalDate: '2025-01-22' },
+    { id: 4, groupName: 'Investment Group', status: 'Rejected', requestDate: '2025-02-05', approvalDate: '-' },
+    { id: 5, groupName: 'Customer Service Group', status: 'Approved', requestDate: '2025-01-25', approvalDate: '2025-01-26' },
+    { id: 6, groupName: 'Savings Account Group', status: 'Pending', requestDate: '2025-02-12', approvalDate: '-' },
+    { id: 7, groupName: 'Fraud Detection Group', status: 'Approved', requestDate: '2025-01-18', approvalDate: '2025-01-19' },
+    { id: 8, groupName: 'Digital Banking Group', status: 'Pending', requestDate: '2025-02-14', approvalDate: '-' },
+  ];
 
-  
-  const filteredRequests = activeFilter === 'all' 
-    ? subscriptionRequests 
-    : subscriptionRequests.filter(request => request.status === activeFilter);
+  const filteredSubscriptions = filter === 'All' 
+    ? subscriptions 
+    : subscriptions.filter(sub => sub.status === filter);
 
-
-  const getStatusClass = (status) => {
+  const getStatusBadgeClass = (status) => {
     switch(status) {
-      case 'pending': return 'status-pending';
-      case 'approved': return 'status-approved';
-      case 'rejected': return 'status-rejected';
-      default: return '';
+      case 'Approved':
+        return 'badge bg-success';
+      case 'Pending':
+        return 'badge bg-warning text-dark';
+      case 'Rejected':
+        return 'badge bg-danger';
+      default:
+        return 'badge bg-secondary';
     }
   };
 
-  
-  const capitalizeStatus = (status) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
-
   return (
-    <div className="subscription-status-container">
-      <div className="subscription-status-header">
-        <h3 className="subscription-status-title">Subscription Status</h3>
-        <p className="subscription-status-subtitle">Track your group subscription requests</p>
+    <div className="container-fluid p-4">
+      <div className="mb-4">
+        <h2 className="fw-bold text-dark mb-1">Subscription Status</h2>
+        <p className="text-muted">Track your group subscription requests</p>
       </div>
 
-      <div className="subscription-summary">
-        <div className="summary-item">
-          <span className="summary-label">Total Requests:</span>
-          <span className="summary-value">{subscriptionRequests.length}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Pending:</span>
-          <span className="summary-value">
-            {subscriptionRequests.filter(r => r.status === 'pending').length}
-          </span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Approved:</span>
-          <span className="summary-value">
-            {subscriptionRequests.filter(r => r.status === 'approved').length}
-          </span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Rejected:</span>
-          <span className="summary-value">
-            {subscriptionRequests.filter(r => r.status === 'rejected').length}
-          </span>
+      <div className="card mb-4 shadow-sm">
+        <div className="card-header bg-light">
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">Filter by Status</h5>
+            <div className="btn-group" role="group">
+              <button 
+                className={`btn btn-sm ${filter === 'All' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setFilter('All')}
+              >
+                All
+              </button>
+              <button 
+                className={`btn btn-sm ${filter === 'Pending' ? 'btn-warning' : 'btn-outline-warning'}`}
+                onClick={() => setFilter('Pending')}
+              >
+                Pending
+              </button>
+              <button 
+                className={`btn btn-sm ${filter === 'Approved' ? 'btn-success' : 'btn-outline-success'}`}
+                onClick={() => setFilter('Approved')}
+              >
+                Approved
+              </button>
+              <button 
+                className={`btn btn-sm ${filter === 'Rejected' ? 'btn-danger' : 'btn-outline-danger'}`}
+                onClick={() => setFilter('Rejected')}
+              >
+                Rejected
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <br></br>
 
-      
-      <div className="filter-buttons-container">
-        <button 
-          className={`filter-btn filter-all ${activeFilter === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('all')}
-        >
-          All
-        </button>
-        <button 
-          className={`filter-btn filter-pending ${activeFilter === 'pending' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('pending')}
-        >
-          Pending
-        </button>
-        <button 
-          className={`filter-btn filter-approved ${activeFilter === 'approved' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('approved')}
-        >
-          Approved
-        </button>
-        <button 
-          className={`filter-btn filter-rejected ${activeFilter === 'rejected' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('rejected')}
-        >
-          Rejected
-        </button>
-      </div>
-      <br></br>
-
-      <div className="table-wrapper">
-        <table className="table table-hover subscription-table">
-          <thead className="table-dark">
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Group Name</th>
-              <th scope="col">Date Requested</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRequests.length > 0 ? (
-              filteredRequests.map((request, index) => (
-                <tr key={request.id}>
-                  <th scope="row">{index + 1}</th>
-                  <td>{request.groupName}</td>
-                  <td>{request.dateRequested}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusClass(request.status)}`}>
-                      {capitalizeStatus(request.status)}
-                    </span>
+      <div className="card shadow-sm">
+        <div className="card-header bg-primary text-white">
+          <h5 className="mb-0">Subscription Requests</h5>
+        </div>
+        <div className="card-body p-0">
+          <table className="table table-hover table-striped mb-0">
+            <thead className="table-dark">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Group Name</th>
+                <th scope="col">Status</th>
+                <th scope="col">Request Date</th>
+                <th scope="col">Approval Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSubscriptions.length > 0 ? (
+                filteredSubscriptions.map((sub, index) => (
+                  <tr key={sub.id}>
+                    <th scope="row">{index + 1}</th>
+                    <td>{sub.groupName}</td>
+                    <td>
+                      <span className={getStatusBadgeClass(sub.status)}>
+                        {sub.status}
+                      </span>
+                    </td>
+                    <td>{sub.requestDate}</td>
+                    <td>{sub.approvalDate}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center text-muted py-4">
+                    No subscriptions found for the selected filter
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="text-center text-muted">
-                  No subscription requests found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-    
-      
+      <div className="row mt-4 g-3">
+        <div className="col-md-4">
+          <div className="card border-success">
+            <div className="card-body text-center">
+              <h3 className="text-success">
+                {subscriptions.filter(s => s.status === 'Approved').length}
+              </h3>
+              <p className="mb-0 text-muted">Approved</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card border-warning">
+            <div className="card-body text-center">
+              <h3 className="text-warning">
+                {subscriptions.filter(s => s.status === 'Pending').length}
+              </h3>
+              <p className="mb-0 text-muted">Pending</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card border-danger">
+            <div className="card-body text-center">
+              <h3 className="text-danger">
+                {subscriptions.filter(s => s.status === 'Rejected').length}
+              </h3>
+              <p className="mb-0 text-muted">Rejected</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

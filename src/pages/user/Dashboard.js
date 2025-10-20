@@ -61,51 +61,54 @@ const Dashboard = () => {
     }
   };
 
-  const handleDownloadSelected = () => {
-    if (selectedReports.length > 0) {
-      console.log('Downloading reports with IDs:', selectedReports);
-      alert(`Downloading ${selectedReports.length} report(s)`);
+  const handleBulkDownload = () => {
+    if (selectedReports.length === 0) {
+      alert('Please select at least one report to download.');
+      return;
     }
+    alert(`Downloading ${selectedReports.length} report(s)...`);
   };
 
   const handleBookmark = (reportId, reportName) => {
-    console.log('Bookmarking report:', reportId);
-    alert(`Report "${reportName}" bookmarked!`);
+    alert(`Report "${reportName}" has been bookmarked!`);
   };
 
   const handleIndividualDownload = (reportId, reportName) => {
-    console.log('Downloading report:', reportId);
     alert(`Downloading report: "${reportName}"`);
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
+    <div className="container-fluid p-4">
+      <div className="dashboard-header mb-4">
         <div className="dashboard-header-left">
-          <h3 className="groups-title">My Subscribed Groups</h3>
+          <h2 className="fw-bold text-dark mb-1">User Dashboard</h2>
+          <p className="text-muted">Welcome back! Here's your overview.</p>
         </div>
         <div className="dashboard-header-right">
           <ReportSearch />
         </div>
       </div>
 
-      <div className="groups-section">
-        <div className="groups-carousel">
-          <button
-            className="btn carousel-btn carousel-btn-prev"
+      <div className="groups-section mb-4">
+        <h5 className="text-dark mb-3 groups-title">My subscribed Groups</h5>
+        
+        <div className="groups-carousel position-relative">
+          <button 
+            className="carousel-btn carousel-btn-prev"
             onClick={handlePrevious}
             disabled={currentIndex === 0}
           >
-            &#8249;
+            ‹
           </button>
 
           <div className="groups-grid-container">
             <div className="row g-3">
               {currentGroups.map((group) => (
-                <div key={group.id} className="col-md-6 col-lg-3">
-                  <div className="card shadow-sm group-card">
+                <div key={group.id} className="col-md-3">
+                  <div className="card h-100 group-card">
                     <div className="card-body text-center">
-                      <h5 className="card-title group-card-title">{group.name}</h5>
+                      <div className="group-icon mb-2">{group.icon}</div>
+                      <h6 className="card-title group-card-title">{group.name}</h6>
                     </div>
                   </div>
                 </div>
@@ -113,35 +116,36 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <button
-            className="btn carousel-btn carousel-btn-next"
+          <button 
+            className="carousel-btn carousel-btn-next"
             onClick={handleNext}
             disabled={currentIndex === totalPages - 1}
           >
-            &#8250;
+            ›
           </button>
         </div>
 
         <div className="page-indicator">
-          <small className="text-muted">
+          <span className="text-muted">
             Page {currentIndex + 1} of {totalPages}
-          </small>
+          </span>
         </div>
       </div>
 
-      <div className="reports-section">
-        <div className="reports-header">
-          <h3 className="reports-title">Recently Opened Reports</h3>
+      <div className="card shadow-sm">
+        <div className="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 className="mb-0">Recent Reports</h5>
           <button 
-            className="btn download-btn"
-            onClick={handleDownloadSelected}
+            className="btn btn-success btn-sm"
+            onClick={handleBulkDownload}
             disabled={selectedReports.length === 0}
           >
+            <i className="bi bi-download me-2"></i>
             Download Selected ({selectedReports.length})
           </button>
         </div>
-        <div className="table-responsive">
-          <table className="table table-hover table-striped">
+        <div className="card-body p-0">
+          <table className="table table-hover table-striped mb-0">
             <thead className="table-dark">
               <tr>
                 <th scope="col">#</th>

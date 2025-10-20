@@ -39,7 +39,6 @@ const AdminPathConfig = () => {
       setAlert('API call failed!');
     }
 
-    // Clear alert after 3 seconds
     setTimeout(() => setAlert(''), 3000);
   };
 

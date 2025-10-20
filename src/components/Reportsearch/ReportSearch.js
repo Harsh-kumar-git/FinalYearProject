@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import reportsData from "../../Data/reports.json";
+import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './ReportSearch.css';
+import reportsData from '../../Data/reports.json';
 
-function ReportSearch() {
+const ReportSearch = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
 
@@ -46,7 +46,6 @@ function ReportSearch() {
         </div>
       </div>
 
-      
       <div className="search-results-wrapper">
         {results.length > 0 ? (
           <table className="table table-bordered search-results-table">
@@ -73,6 +72,6 @@ function ReportSearch() {
       </div>
     </div>
   );
-}
+};
 
 export default ReportSearch;
