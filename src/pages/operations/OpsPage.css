@@ -1,146 +1,81 @@
-/* .ops-container {
-  font-family: "Segoe UI", sans-serif;
-  padding: 20px 40px;
-  background: #f8fafc;
+
+ .ops-page {
+  max-width: 95%;
 }
 
-.ops-title {
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 5px;
-}
-
-.ops-subtitle {
-  color: #555;
-  margin-bottom: 20px;
-}
-
-.summary-cards {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.card {
-  padding: 15px 25px;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  font-weight: 500;
-}
-
-.card.total {
-  border-left: 5px solid #6366f1;
-}
-.card.success {
-  border-left: 5px solid #16a34a;
-}
-.card.pending {
-  border-left: 5px solid #facc15;
-}
-.card.failed {
-  border-left: 5px solid #dc2626;
-}
-
-.reports-section,
-.logs-section {
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
-}
-
-.reports-header,
-.logs-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.sync-all-btn {
-  background-color: #2563eb;
-  color: white;
-  padding: 8px 15px;
-  border: none;
+/* Scrollable tables */
+.table-container {
+  max-height: 350px;  /* Adjust if needed */
+  overflow-y: auto;
   border-radius: 6px;
-  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.sync-btn {
-  background-color: #10b981;
-  color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.sync-btn:hover,
-.sync-all-btn:hover {
-  opacity: 0.9;
-}
-
-.reports-table,
-.logs-table {
+/* Fix header alignment during scroll */
+.table-container table {
   width: 100%;
+  margin-bottom: 0;
   border-collapse: collapse;
 }
 
-.reports-table th,
-.reports-table td,
-.logs-table th,
-.logs-table td {
-  padding: 10px;
-  border-bottom: 1px solid #e5e7eb;
-  text-align: left;
-}
-
-.status-badge {
-  padding: 3px 8px;
-  border-radius: 6px;
+.table-container thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #212529; /* Bootstrap table-dark bg */
   color: white;
-  font-size: 13px;
 }
 
-.status-badge.success {
-  background-color: #16a34a;
+/* Card styling */
+.summary-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.status-badge.pending {
-  background-color: #facc15;
-  color: black;
-}
-.status-badge.failed {
-  background-color: #dc2626;
-}
-.status-badge.syncing {
-  background-color: #3b82f6;
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.logs-header input {
-  padding: 6px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  width: 200px;
-} */
-
-/* OpsPage.css */
-
-body {
-  background-color: #f8fafc;
-  font-family: "Segoe UI", sans-serif;
+.summary-card.pending {
+  background-color: white;           /* White background */
+  border: 2px solid #ffd100;        /* Yellow border */
+  box-shadow: 0 4px 6px rgba(255, 209, 0, 0.4); /* Yellow shadow */
+  color: #333;                       /* Dark text */
 }
 
-h2, h5 {
-  font-weight: 600;
+/* Inputs and labels */
+input[type="text"],
+input[type="date"] {
+  min-width: 180px;
+}
+.status-synced {
+  background-color: rgba(0, 166, 81, 0.1); /* light green row */
+}
+.status-pending {
+  background-color: rgba(255, 209, 0, 0.1); /* light yellow row */
+}
+label {
+  font-weight: 500;
+}
+.fade-in {
+  animation: fadeIn 0.5s ease;
+}
+.summary-card.synced {
+  background: linear-gradient(135deg, #00a651, #00d28a);
 }
 
-.badge {
-  font-size: 0.85rem;
-  padding: 0.35em 0.65em;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+/* Table row hover */
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+.spin {
+  animation: spin 1s linear infinite;
 }
 
-input.form-control {
-  max-width: 250px;
+@keyframes spin {
+  from { transform: rotate(0deg);}
+  to { transform: rotate(360deg);}
 }
