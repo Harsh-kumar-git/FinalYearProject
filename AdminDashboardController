@@ -1,0 +1,48 @@
+package com.example.adminbackend.controller;
+
+import com.example.adminbackend.model.DashboardStat;
+import com.example.adminbackend.repository.DashboardStatRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/admin/dashboard")
+public class AdminDashboardController {
+
+    @Autowired
+    private DashboardStatRepository dashboardStatRepository;
+
+    @GetMapping("/stats")
+    public List<DashboardStat> getDashboardStats() {
+        return dashboardStatRepository.findAll();
+    }
+
+    @PostMapping("/stats")
+    public DashboardStat addDashboardStat(@RequestBody DashboardStat stat) {
+        return dashboardStatRepository.save(stat);
+    }
+
+    @PutMapping("/stats/{id}")
+    public ResponseEntity<DashboardStat> updateDashboardStat(@PathVariable Long id, @RequestBody DashboardStat statDetails) {
+        return dashboardStatRepository.findById(id)
+                .map(stat -> {
+                    stat.setMetric(statDetails.getMetric());
+                    stat.setValue(statDetails.getValue());
+                    stat.setDate(statDetails.getDate());
+                    DashboardStat updatedStat = dashboardStatRepository.save(stat);
+                    return ResponseEntity.ok().body(updatedStat);
+                }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/stats/{id}")
+    public ResponseEntity<?> deleteDashboardStat(@PathVariable Long id) {
+        return dashboardStatRepository.findById(id)
+                .map(stat -> {
+                    dashboardStatRepository.delete(stat);
+                    return ResponseEntity.ok().build();
+                }).orElse(ResponseEntity.notFound().build());
+    }
+}
