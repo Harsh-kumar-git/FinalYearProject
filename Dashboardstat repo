@@ -1,0 +1,17 @@
+package com.example.adminbackend.repository;
+
+
+
+import com.example.adminbackend.model.DashboardStat;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import org.springframework.stereotype.Repository;
+
+
+
+@Repository
+
+public interface DashboardStatRepository extends JpaRepository<DashboardStat, Long> {
+
+}
