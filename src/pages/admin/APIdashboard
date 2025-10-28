@@ -1,0 +1,61 @@
+import React, { useEffect, useState } from "react";
+
+function Dashboard() {
+  const [stats, setStats] = useState([]);
+  const [error, setError] = useState("");
+
+  // 🔥 Call backend API to fetch data
+  useEffect(() => {
+    fetch("http://localhost:8080/admin/dashboard/stats")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => setStats(data))
+      .catch((err) => {
+        console.error("Error fetching dashboard data:", err);
+        setError("Failed to load dashboard data");
+      });
+  }, []);
+
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h2>📊 Admin Dashboard</h2>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {!error && stats.length === 0 && <p>Loading dashboard data...</p>}
+
+      {!error && stats.length > 0 && (
+        <table
+          border="1"
+          cellPadding="10"
+          style={{ borderCollapse: "collapse", marginTop: "1rem" }}
+        >
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Total Users</th>
+              <th>Pending Requests</th>
+              <th>Approved Today</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.map((stat) => (
+              <tr key={stat.id}>
+                <td>{stat.id}</td>
+                <td>{stat.total_User}</td>
+                <td>{stat.pendingRequests}</td>
+                <td>{stat.approved_Today}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+export default Dashboard;
