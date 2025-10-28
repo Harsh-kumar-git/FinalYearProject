@@ -1,41 +1,74 @@
-import React, { useState } from 'react';
-import './Dashboard.css';
+import React, { useState, useEffect } from "react";
+import api from "../../api/api";
+import "./Dashboard.css";
 
 const Dashboard = () => {
-  const [requests] = useState([
-    { id: 1, bankId: 'BNK001', username: 'john.doe', adGroup: 'Finance_Team', status: 'Pending' },
-    { id: 2, bankId: 'BNK002', username: 'jane.smith', adGroup: 'IT_Admin', status: 'Pending' },
-    { id: 3, bankId: 'BNK003', username: 'mike.johnson', adGroup: 'HR_Department', status: 'Pending' },
-    { id: 4, bankId: 'BNK004', username: 'sarah.williams', adGroup: 'Marketing_Team', status: 'Pending' },
-    { id: 5, bankId: 'BNK005', username: 'tom.brown', adGroup: 'Sales_Team', status: 'Pending' },
-    { id: 6, bankId: 'BNK006', username: 'emily.davis', adGroup: 'Finance_Team', status: 'Pending' },
-    { id: 7, bankId: 'BNK007', username: 'david.wilson', adGroup: 'IT_Admin', status: 'Pending' }
-  ]);
+  const [stats, setStats] = useState({
+    total_User: 0,
+    pendingRequests: 0,
+    approved_Today: 0,
+  });
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterAdGroup, setFilterAdGroup] = useState("");
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterAdGroup, setFilterAdGroup] = useState('');
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch stats from backend
+        const statsResponse = await api.get("/stats");
+        if (statsResponse.data && statsResponse.data.length > 0) {
+          // Assuming backend returns a list of DashboardStat
+          setStats(statsResponse.data[0]);
+        }
 
-  const handleGrantAccess = (requestId) => {
-    alert(`Access granted for request ID: ${requestId}`);
+        // Fetch access requests (for now using static data)
+        const requestsResponse = await api.get("/requests"); // adjust if you have this API later
+        setRequests(requestsResponse.data || []);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const handleGrantAccess = async (requestId) => {
+    try {
+      const response = await api.post(`/access-requests/${requestId}/approve`);
+      if (response.status === 200) {
+        alert(`Access granted for request ID: ${requestId}`);
+        setRequests((prev) => prev.filter((req) => req.id !== requestId));
+      }
+    } catch (error) {
+      console.error("Error granting access:", error);
+      alert("Failed to grant access");
+    }
   };
 
-  const filteredRequests = requests.filter(request => {
-    const matchesSearch = 
+  const filteredRequests = requests.filter((request) => {
+    const matchesSearch =
       request.id.toString().includes(searchTerm) ||
       request.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.adGroup.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesAdGroup = filterAdGroup === '' || request.adGroup === filterAdGroup;
+
+    const matchesAdGroup =
+      !filterAdGroup || request.adGroup === filterAdGroup;
 
     return matchesSearch && matchesAdGroup;
   });
 
-  const uniqueAdGroups = [...new Set(requests.map(r => r.adGroup))];
+  const uniqueAdGroups = [...new Set(requests.map((r) => r.adGroup))];
+
+  if (loading) return <p className="text-center mt-5">Loading...</p>;
 
   return (
     <div className="container-fluid p-4">
       <div className="mb-4">
-        <h2 className="fw-bold text-dark mb-1">Dashboard</h2>
+        <h2 className="fw-bold text-dark mb-1">Admin Panel</h2>
         <p className="text-muted">Access Request Management</p>
       </div>
 
@@ -47,7 +80,7 @@ const Dashboard = () => {
                 <i className="bi bi-people"></i>
               </div>
               <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">150</h3>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.total_User}</h3>
                 <p className="mb-0 text-muted small">Total Users</p>
               </div>
             </div>
@@ -61,7 +94,7 @@ const Dashboard = () => {
                 <i className="bi bi-clock-history"></i>
               </div>
               <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">{requests.length}</h3>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.pendingRequests}</h3>
                 <p className="mb-0 text-muted small">Pending Requests</p>
               </div>
             </div>
@@ -75,7 +108,7 @@ const Dashboard = () => {
                 <i className="bi bi-check-circle"></i>
               </div>
               <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">45</h3>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.approved_Today}</h3>
                 <p className="mb-0 text-muted small">Approved Today</p>
               </div>
             </div>
@@ -83,6 +116,7 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Requests Table */}
       <div className="card shadow-sm">
         <div className="card-header bg-light">
           <h5 className="mb-3">Filter Requests</h5>
@@ -97,6 +131,7 @@ const Dashboard = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
             <div className="col-md-5">
               <label className="form-label small text-muted">Filter by AD Group</label>
               <select
@@ -106,16 +141,19 @@ const Dashboard = () => {
               >
                 <option value="">All Groups</option>
                 {uniqueAdGroups.map((group, index) => (
-                  <option key={index} value={group}>{group}</option>
+                  <option key={index} value={group}>
+                    {group}
+                  </option>
                 ))}
               </select>
             </div>
+
             <div className="col-md-2">
               <button
                 className="btn btn-outline-secondary w-100"
                 onClick={() => {
-                  setSearchTerm('');
-                  setFilterAdGroup('');
+                  setSearchTerm("");
+                  setFilterAdGroup("");
                 }}
               >
                 <i className="bi bi-x-circle me-2"></i>
@@ -140,19 +178,12 @@ const Dashboard = () => {
                 {filteredRequests.length > 0 ? (
                   filteredRequests.map((request) => (
                     <tr key={request.id}>
-                      <td className="p-3 align-middle">
-                        <span className="bank-id-badge">{request.bankId}</span>
-                      </td>
-                      <td className="p-3 align-middle">
-                        <div className="d-flex align-items-center">
-                          <i className="bi bi-person-circle me-2 fs-5 text-secondary"></i>
-                          {request.username}
-                        </div>
-                      </td>
+                      <td className="p-3 align-middle">{request.bankId}</td>
+                      <td className="p-3 align-middle">{request.username}</td>
                       <td className="p-3 align-middle">{request.adGroup}</td>
                       <td className="p-3 align-middle">
-                        <button 
-                          className="btn btn-grant-access px-3 py-2"
+                        <button
+                          className="btn btn-success px-3 py-2"
                           onClick={() => handleGrantAccess(request.id)}
                         >
                           <i className="bi bi-check-circle me-2"></i>
