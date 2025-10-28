@@ -10,24 +10,29 @@ const Dashboard = () => {
   });
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterAdGroup, setFilterAdGroup] = useState("");
 
+  // ✅ Fetch dashboard stats + requests
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch stats from backend
-        const statsResponse = await api.get("/stats");
-        if (statsResponse.data && statsResponse.data.length > 0) {
-          // Assuming backend returns a list of DashboardStat
-          setStats(statsResponse.data[0]);
-        }
+        setLoading(true);
 
-        // Fetch access requests (for now using static data)
-        const requestsResponse = await api.get("/requests"); // adjust if you have this API later
+        // Fetch stats
+        const statsResponse = await api.get("/admin/dashboard/stats");
+        const statsData = Array.isArray(statsResponse.data)
+          ? statsResponse.data[0]
+          : statsResponse.data;
+        setStats(statsData || {});
+
+        // Fetch requests (optional)
+        const requestsResponse = await api.get("/admin/dashboard/requests");
         setRequests(requestsResponse.data || []);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        setError("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -36,34 +41,44 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  // ✅ Handle approve action
   const handleGrantAccess = async (requestId) => {
     try {
-      const response = await api.post(`/access-requests/${requestId}/approve`);
+      const response = await api.post(`/admin/dashboard/access-requests/${requestId}/approve`);
       if (response.status === 200) {
-        alert(`Access granted for request ID: ${requestId}`);
+        alert(`✅ Access granted for request ID: ${requestId}`);
         setRequests((prev) => prev.filter((req) => req.id !== requestId));
       }
-    } catch (error) {
-      console.error("Error granting access:", error);
-      alert("Failed to grant access");
+    } catch (err) {
+      console.error("Error granting access:", err);
+      alert("❌ Failed to grant access");
     }
   };
 
+  // ✅ Filtering logic
   const filteredRequests = requests.filter((request) => {
     const matchesSearch =
       request.id.toString().includes(searchTerm) ||
       request.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.adGroup.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesAdGroup =
-      !filterAdGroup || request.adGroup === filterAdGroup;
-
+    const matchesAdGroup = !filterAdGroup || request.adGroup === filterAdGroup;
     return matchesSearch && matchesAdGroup;
   });
 
   const uniqueAdGroups = [...new Set(requests.map((r) => r.adGroup))];
 
-  if (loading) return <p className="text-center mt-5">Loading...</p>;
+  if (loading)
+    return (
+      <div className="text-center mt-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+
+  if (error)
+    return <p className="text-center text-danger mt-5">{error}</p>;
 
   return (
     <div className="container-fluid p-4">
@@ -72,12 +87,13 @@ const Dashboard = () => {
         <p className="text-muted">Access Request Management</p>
       </div>
 
+      {/* ==== Stats Section ==== */}
       <div className="row g-4 mb-4">
         <div className="col-md-4">
           <div className="card border">
             <div className="card-body d-flex align-items-center gap-3">
-              <div className="stat-icon bg-primary">
-                <i className="bi bi-people"></i>
+              <div className="stat-icon bg-primary text-white rounded-circle p-3">
+                <i className="bi bi-people fs-4"></i>
               </div>
               <div>
                 <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.total_User}</h3>
@@ -90,8 +106,8 @@ const Dashboard = () => {
         <div className="col-md-4">
           <div className="card border">
             <div className="card-body d-flex align-items-center gap-3">
-              <div className="stat-icon bg-warning">
-                <i className="bi bi-clock-history"></i>
+              <div className="stat-icon bg-warning text-white rounded-circle p-3">
+                <i className="bi bi-clock-history fs-4"></i>
               </div>
               <div>
                 <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.pendingRequests}</h3>
@@ -104,8 +120,8 @@ const Dashboard = () => {
         <div className="col-md-4">
           <div className="card border">
             <div className="card-body d-flex align-items-center gap-3">
-              <div className="stat-icon bg-success">
-                <i className="bi bi-check-circle"></i>
+              <div className="stat-icon bg-success text-white rounded-circle p-3">
+                <i className="bi bi-check-circle fs-4"></i>
               </div>
               <div>
                 <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.approved_Today}</h3>
@@ -116,7 +132,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Requests Table */}
+      {/* ==== Requests Table ==== */}
       <div className="card shadow-sm">
         <div className="card-header bg-light">
           <h5 className="mb-3">Filter Requests</h5>
