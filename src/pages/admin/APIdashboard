@@ -1,250 +1,112 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "./Dashboard.css"; // optional — only if you have styles
+package com.scgbs.rwtool.controller;
 
-const Dashboard = () => {
-  const [stats, setStats] = useState({
-    total_User: 0,
-    pendingRequests: 0,
-    approved_Today: 0,
-  });
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterAdGroup, setFilterAdGroup] = useState("");
+import com.scgbs.rwtool.model.Request;
+import com.scgbs.rwtool.model.AdminUser;
+import com.scgbs.rwtool.repository.RequestRepository;
+import com.scgbs.rwtool.repository.AdminUserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-  // ✅ Fetch dashboard stats + requests
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
+import java.util.*;
 
-        // ✅ Fetch dashboard stats
-        const statsResponse = await axios.get(
-          "http://localhost:8080/admin/dashboard/stats"
-        );
-        const statsData = Array.isArray(statsResponse.data)
-          ? statsResponse.data[0]
-          : statsResponse.data;
-        setStats(statsData || {});
+@RestController
+@RequestMapping("/api/admin")
+@CrossOrigin(origins = "*") // Allow frontend calls
+public class AdminDashboardController {
 
-        // ✅ Fetch requests list
-        const requestsResponse = await axios.get(
-          "http://localhost:8080/admin/dashboard/requests"
-        );
-        setRequests(requestsResponse.data || []);
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-        setError("⚠️ Failed to load dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
+    @Autowired
+    private RequestRepository requestRepository;
 
-    fetchDashboardData();
-  }, []);
+    @Autowired
+    private AdminUserRepository adminUserRepository;
 
-  // ✅ Handle "Grant Access" button click
-  const handleGrantAccess = async (requestId) => {
-    try {
-      const response = await axios.post(
-        `http://localhost:8080/admin/dashboard/requests/${requestId}/approve`
-      );
-      if (response.status === 200) {
-        alert(`✅ Access granted for request ID: ${requestId}`);
-        setRequests((prev) => prev.filter((req) => req.id !== requestId));
-      }
-    } catch (err) {
-      console.error("Error granting access:", err);
-      alert("❌ Failed to grant access");
+    // --------------------- 📊 Dashboard Stats ---------------------
+    @GetMapping("/dashboard-stats")
+    public ResponseEntity<Map<String, Object>> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        long totalRequests = requestRepository.count();
+        long approvedRequests = requestRepository.countByStatus("approved");
+        long pendingRequests = requestRepository.countByStatus("pending");
+
+        stats.put("totalRequests", totalRequests);
+        stats.put("approvedRequests", approvedRequests);
+        stats.put("pendingRequests", pendingRequests);
+
+        return ResponseEntity.ok(stats);
     }
-  };
 
-  // ✅ Filtering logic
-  const filteredRequests = requests.filter((request) => {
-    const matchesSearch =
-      request.id?.toString().includes(searchTerm) ||
-      request.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.adgroup?.toLowerCase().includes(searchTerm.toLowerCase());
+    // --------------------- 📨 Request Management ---------------------
+    @GetMapping("/requests")
+    public ResponseEntity<List<Request>> getAllRequests() {
+        List<Request> requests = requestRepository.findAll();
+        return ResponseEntity.ok(requests);
+    }
 
-    const matchesAdGroup =
-      !filterAdGroup || request.adgroup === filterAdGroup;
+    @GetMapping("/requests/{id}")
+    public ResponseEntity<Request> getRequestById(@PathVariable Long id) {
+        return requestRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-    return matchesSearch && matchesAdGroup;
-  });
+    @PostMapping("/requests")
+    public ResponseEntity<Request> createRequest(@RequestBody Request request) {
+        request.setStatus("pending");
+        Request savedRequest = requestRepository.save(request);
+        return ResponseEntity.ok(savedRequest);
+    }
 
-  const uniqueAdGroups = [...new Set(requests.map((r) => r.adgroup))];
+    // ✅ Approve Request → Move to AdminUser table
+    @PutMapping("/requests/{id}/approve")
+    public ResponseEntity<String> approveRequest(@PathVariable Long id) {
+        Optional<Request> requestOpt = requestRepository.findById(id);
 
-  // ✅ Show loading spinner
-  if (loading)
-    return (
-      <div className="text-center mt-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
+        if (requestOpt.isPresent()) {
+            Request request = requestOpt.get();
+            request.setStatus("approved");
+            requestRepository.save(request);
 
-  // ✅ Show error
-  if (error)
-    return <p className="text-center text-danger mt-5">{error}</p>;
+            // Copy data to AdminUser
+            AdminUser newUser = new AdminUser();
+            newUser.setUsername(request.getUsername());
+            newUser.setAdgroup(request.getAdgroup());
+            newUser.setStatus("active");
+            adminUserRepository.save(newUser);
 
-  // ✅ Main UI
-  return (
-    <div className="container-fluid p-4">
-      <div className="mb-4">
-        <h2 className="fw-bold text-dark mb-1">Admin Dashboard</h2>
-        <p className="text-muted">Access Request Management</p>
-      </div>
+            return ResponseEntity.ok("Access granted and user added to AdminUser table.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
-      {/* ==== Stats Section ==== */}
-      <div className="row g-4 mb-4">
-        <div className="col-md-4">
-          <div className="card border">
-            <div className="card-body d-flex align-items-center gap-3">
-              <div className="stat-icon bg-primary text-white rounded-circle p-3">
-                <i className="bi bi-people fs-4"></i>
-              </div>
-              <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">
-                  {stats.total_User}
-                </h3>
-                <p className="mb-0 text-muted small">Total Users</p>
-              </div>
-            </div>
-          </div>
-        </div>
+    // --------------------- 👥 Admin User Management ---------------------
+    @GetMapping("/users")
+    public ResponseEntity<List<AdminUser>> getAllAdminUsers() {
+        List<AdminUser> users = adminUserRepository.findAll();
+        return ResponseEntity.ok(users);
+    }
 
-        <div className="col-md-4">
-          <div className="card border">
-            <div className="card-body d-flex align-items-center gap-3">
-              <div className="stat-icon bg-warning text-white rounded-circle p-3">
-                <i className="bi bi-clock-history fs-4"></i>
-              </div>
-              <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">
-                  {stats.pendingRequests}
-                </h3>
-                <p className="mb-0 text-muted small">Pending Requests</p>
-              </div>
-            </div>
-          </div>
-        </div>
+    @PostMapping("/users")
+    public ResponseEntity<AdminUser> createUser(@RequestBody AdminUser user) {
+        user.setStatus("active");
+        AdminUser savedUser = adminUserRepository.save(user);
+        return ResponseEntity.ok(savedUser);
+    }
 
-        <div className="col-md-4">
-          <div className="card border">
-            <div className="card-body d-flex align-items-center gap-3">
-              <div className="stat-icon bg-success text-white rounded-circle p-3">
-                <i className="bi bi-check-circle fs-4"></i>
-              </div>
-              <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">
-                  {stats.approved_Today}
-                </h3>
-                <p className="mb-0 text-muted small">Approved Today</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    // 🚫 Revoke access → set status to inactive
+    @PutMapping("/users/{id}/revoke")
+    public ResponseEntity<String> revokeAccess(@PathVariable Long id) {
+        Optional<AdminUser> userOpt = adminUserRepository.findById(id);
 
-      {/* ==== Requests Table ==== */}
-      <div className="card shadow-sm">
-        <div className="card-header bg-light">
-          <h5 className="mb-3">Filter Requests</h5>
-          <div className="row g-3 align-items-end">
-            <div className="col-md-5">
-              <label className="form-label small text-muted">Search</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search by ID, username, or AD group..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-5">
-              <label className="form-label small text-muted">
-                Filter by AD Group
-              </label>
-              <select
-                className="form-select"
-                value={filterAdGroup}
-                onChange={(e) => setFilterAdGroup(e.target.value)}
-              >
-                <option value="">All Groups</option>
-                {uniqueAdGroups.map((group, index) => (
-                  <option key={index} value={group}>
-                    {group}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <button
-                className="btn btn-outline-secondary w-100"
-                onClick={() => {
-                  setSearchTerm("");
-                  setFilterAdGroup("");
-                }}
-              >
-                <i className="bi bi-x-circle me-2"></i>
-                Clear
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-hover mb-0">
-              <thead className="bg-light">
-                <tr>
-                  <th className="fw-bold text-dark p-3">ID</th>
-                  <th className="fw-bold text-dark p-3">Emp ID</th>
-                  <th className="fw-bold text-dark p-3">Username</th>
-                  <th className="fw-bold text-dark p-3">AD Group</th>
-                  <th className="fw-bold text-dark p-3">Status</th>
-                  <th className="fw-bold text-dark p-3">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRequests.length > 0 ? (
-                  filteredRequests.map((req) => (
-                    <tr key={req.id}>
-                      <td className="p-3 align-middle">{req.id}</td>
-                      <td className="p-3 align-middle">{req.emp_ID}</td>
-                      <td className="p-3 align-middle">{req.username}</td>
-                      <td className="p-3 align-middle">{req.adgroup}</td>
-                      <td className="p-3 align-middle">{req.status}</td>
-                      <td className="p-3 align-middle">
-                        <button
-                          className="btn btn-success px-3 py-2"
-                          onClick={() => handleGrantAccess(req.id)}
-                        >
-                          <i className="bi bi-check-circle me-2"></i>
-                          Grant Access
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="text-center text-muted py-4">
-                      No requests found matching your filters
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Dashboard;
+        if (userOpt.isPresent()) {
+            AdminUser user = userOpt.get();
+            user.setStatus("inactive");
+            adminUserRepository.save(user);
+            return ResponseEntity.ok("User access revoked successfully.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+}
