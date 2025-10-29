@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import api from "../../api/api";
-import "./Dashboard.css";
+import axios from "axios";
+import "./Dashboard.css"; // optional — only if you have styles
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -8,8 +8,7 @@ const Dashboard = () => {
     pendingRequests: 0,
     approved_Today: 0,
   });
-
-  const [requests, setRequests] = useState([]); // ✅ already present
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,20 +20,23 @@ const Dashboard = () => {
       try {
         setLoading(true);
 
-        // 🆕 Fetch stats
-        const statsResponse = await api.get("/admin/dashboard/stats");
+        // ✅ Fetch dashboard stats
+        const statsResponse = await axios.get(
+          "http://localhost:8080/admin/dashboard/stats"
+        );
         const statsData = Array.isArray(statsResponse.data)
           ? statsResponse.data[0]
           : statsResponse.data;
         setStats(statsData || {});
 
-        // 🆕 Fetch requests (MAIN CHANGE)
-        const requestsResponse = await api.get("/admin/dashboard/requests");
+        // ✅ Fetch requests list
+        const requestsResponse = await axios.get(
+          "http://localhost:8080/admin/dashboard/requests"
+        );
         setRequests(requestsResponse.data || []);
-
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
-        setError("Failed to load dashboard data");
+        setError("⚠️ Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -43,10 +45,12 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // ✅ Approve request
+  // ✅ Handle "Grant Access" button click
   const handleGrantAccess = async (requestId) => {
     try {
-      const response = await api.post(`/admin/dashboard/access-requests/${requestId}/approve`);
+      const response = await axios.post(
+        `http://localhost:8080/admin/dashboard/requests/${requestId}/approve`
+      );
       if (response.status === 200) {
         alert(`✅ Access granted for request ID: ${requestId}`);
         setRequests((prev) => prev.filter((req) => req.id !== requestId));
@@ -57,19 +61,22 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ Filtering logic (already existed)
+  // ✅ Filtering logic
   const filteredRequests = requests.filter((request) => {
     const matchesSearch =
-      request.id.toString().includes(searchTerm) ||
+      request.id?.toString().includes(searchTerm) ||
       request.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.adgroup?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesAdGroup = !filterAdGroup || request.adgroup === filterAdGroup;
+    const matchesAdGroup =
+      !filterAdGroup || request.adgroup === filterAdGroup;
+
     return matchesSearch && matchesAdGroup;
   });
 
   const uniqueAdGroups = [...new Set(requests.map((r) => r.adgroup))];
 
+  // ✅ Show loading spinner
   if (loading)
     return (
       <div className="text-center mt-5">
@@ -79,14 +86,15 @@ const Dashboard = () => {
       </div>
     );
 
+  // ✅ Show error
   if (error)
     return <p className="text-center text-danger mt-5">{error}</p>;
 
+  // ✅ Main UI
   return (
     <div className="container-fluid p-4">
-      {/* ==== Header ==== */}
       <div className="mb-4">
-        <h2 className="fw-bold text-dark mb-1">Admin Panel</h2>
+        <h2 className="fw-bold text-dark mb-1">Admin Dashboard</h2>
         <p className="text-muted">Access Request Management</p>
       </div>
 
@@ -99,7 +107,9 @@ const Dashboard = () => {
                 <i className="bi bi-people fs-4"></i>
               </div>
               <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.total_User}</h3>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">
+                  {stats.total_User}
+                </h3>
                 <p className="mb-0 text-muted small">Total Users</p>
               </div>
             </div>
@@ -113,7 +123,9 @@ const Dashboard = () => {
                 <i className="bi bi-clock-history fs-4"></i>
               </div>
               <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.pendingRequests}</h3>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">
+                  {stats.pendingRequests}
+                </h3>
                 <p className="mb-0 text-muted small">Pending Requests</p>
               </div>
             </div>
@@ -127,7 +139,9 @@ const Dashboard = () => {
                 <i className="bi bi-check-circle fs-4"></i>
               </div>
               <div>
-                <h3 className="fs-2 fw-bold mb-0 text-dark">{stats.approved_Today}</h3>
+                <h3 className="fs-2 fw-bold mb-0 text-dark">
+                  {stats.approved_Today}
+                </h3>
                 <p className="mb-0 text-muted small">Approved Today</p>
               </div>
             </div>
@@ -152,7 +166,9 @@ const Dashboard = () => {
             </div>
 
             <div className="col-md-5">
-              <label className="form-label small text-muted">Filter by AD Group</label>
+              <label className="form-label small text-muted">
+                Filter by AD Group
+              </label>
               <select
                 className="form-select"
                 value={filterAdGroup}
@@ -182,14 +198,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 🆕 Dynamic Requests Table from Backend */}
         <div className="card-body p-0">
           <div className="table-responsive">
             <table className="table table-hover mb-0">
               <thead className="bg-light">
                 <tr>
                   <th className="fw-bold text-dark p-3">ID</th>
-                  <th className="fw-bold text-dark p-3">Employee ID</th>
+                  <th className="fw-bold text-dark p-3">Emp ID</th>
                   <th className="fw-bold text-dark p-3">Username</th>
                   <th className="fw-bold text-dark p-3">AD Group</th>
                   <th className="fw-bold text-dark p-3">Status</th>
@@ -198,17 +213,17 @@ const Dashboard = () => {
               </thead>
               <tbody>
                 {filteredRequests.length > 0 ? (
-                  filteredRequests.map((request) => (
-                    <tr key={request.id}>
-                      <td className="p-3 align-middle">{request.id}</td>
-                      <td className="p-3 align-middle">{request.emp_ID}</td>
-                      <td className="p-3 align-middle">{request.username}</td>
-                      <td className="p-3 align-middle">{request.adgroup}</td>
-                      <td className="p-3 align-middle">{request.status}</td>
+                  filteredRequests.map((req) => (
+                    <tr key={req.id}>
+                      <td className="p-3 align-middle">{req.id}</td>
+                      <td className="p-3 align-middle">{req.emp_ID}</td>
+                      <td className="p-3 align-middle">{req.username}</td>
+                      <td className="p-3 align-middle">{req.adgroup}</td>
+                      <td className="p-3 align-middle">{req.status}</td>
                       <td className="p-3 align-middle">
                         <button
                           className="btn btn-success px-3 py-2"
-                          onClick={() => handleGrantAccess(request.id)}
+                          onClick={() => handleGrantAccess(req.id)}
                         >
                           <i className="bi bi-check-circle me-2"></i>
                           Grant Access
