@@ -1,19 +1,26 @@
 package com.scgbs.rwtool.controller;
 
+import com.scgbs.rwtool.model.DashboardStat;
 import com.scgbs.rwtool.model.Request;
 import com.scgbs.rwtool.model.AdminUser;
+import com.scgbs.rwtool.repository.DashboardStatRepository;
 import com.scgbs.rwtool.repository.RequestRepository;
 import com.scgbs.rwtool.repository.AdminUserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/admin")
-@CrossOrigin(origins = "*") // Allow frontend calls
+@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/admin/dashboard")
 public class AdminDashboardController {
+
+    @Autowired
+    private DashboardStatRepository dashboardStatRepository;
 
     @Autowired
     private RequestRepository requestRepository;
@@ -21,59 +28,88 @@ public class AdminDashboardController {
     @Autowired
     private AdminUserRepository adminUserRepository;
 
-    // --------------------- 📊 Dashboard Stats ---------------------
-    @GetMapping("/dashboard-stats")
-    public ResponseEntity<Map<String, Object>> getDashboardStats() {
-        Map<String, Object> stats = new HashMap<>();
-
-        long totalRequests = requestRepository.count();
-        long approvedRequests = requestRepository.countByStatus("approved");
-        long pendingRequests = requestRepository.countByStatus("pending");
-
-        stats.put("totalRequests", totalRequests);
-        stats.put("approvedRequests", approvedRequests);
-        stats.put("pendingRequests", pendingRequests);
-
-        return ResponseEntity.ok(stats);
+    // -------------------- 📊 DASHBOARD STATS --------------------
+    @GetMapping("/stats")
+    public List<DashboardStat> getDashboardStats() {
+        return dashboardStatRepository.findAll();
     }
 
-    // --------------------- 📨 Request Management ---------------------
+    @PostMapping("/stats")
+    public DashboardStat addDashboardStat(@RequestBody DashboardStat stat) {
+        return dashboardStatRepository.save(stat);
+    }
+
+    @PutMapping("/stats/{id}")
+    public ResponseEntity<DashboardStat> updateDashboardStat(@PathVariable Long id, @RequestBody DashboardStat statDetails) {
+        return dashboardStatRepository.findById(id)
+                .map(stat -> {
+                    stat.setTotal_User(statDetails.getTotal_User());
+                    stat.setPendingRequests(statDetails.getPendingRequests());
+                    stat.setApproved_Today(statDetails.getApproved_Today());
+                    DashboardStat updatedStat = dashboardStatRepository.save(stat);
+                    return ResponseEntity.ok().body(updatedStat);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/stats/{id}")
+    public ResponseEntity<?> deleteDashboardStat(@PathVariable Long id) {
+        return dashboardStatRepository.findById(id)
+                .map(stat -> {
+                    dashboardStatRepository.delete(stat);
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // -------------------- 📨 REQUESTS --------------------
     @GetMapping("/requests")
-    public ResponseEntity<List<Request>> getAllRequests() {
-        List<Request> requests = requestRepository.findAll();
-        return ResponseEntity.ok(requests);
+    public List<Request> getAllRequests() {
+        return requestRepository.findAll();
     }
 
     @GetMapping("/requests/{id}")
-    public ResponseEntity<Request> getRequestById(@PathVariable Long id) {
+    public ResponseEntity<Request> getRequestByID(@PathVariable Long id) {
         return requestRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(request -> ResponseEntity.ok().body(request))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/requests")
-    public ResponseEntity<Request> createRequest(@RequestBody Request request) {
+    public Request createRequest(@RequestBody Request request) {
         request.setStatus("pending");
-        Request savedRequest = requestRepository.save(request);
-        return ResponseEntity.ok(savedRequest);
+        return requestRepository.save(request);
     }
 
-    // ✅ Approve Request → Move to AdminUser table
-    @PutMapping("/requests/{id}/approve")
-    public ResponseEntity<String> approveRequest(@PathVariable Long id) {
-        Optional<Request> requestOpt = requestRepository.findById(id);
+    @DeleteMapping("/requests/{id}")
+    public ResponseEntity<?> deleteRequest(@PathVariable Long id) {
+        return requestRepository.findById(id)
+                .map(request -> {
+                    requestRepository.delete(request);
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-        if (requestOpt.isPresent()) {
-            Request request = requestOpt.get();
+    // ✅ APPROVE REQUEST AND MOVE TO ADMIN USER TABLE
+    @PostMapping("/requests/{id}/approve")
+    public ResponseEntity<?> approveRequest(@PathVariable Long id) {
+        Optional<Request> optionalRequest = requestRepository.findById(id);
+
+        if (optionalRequest.isPresent()) {
+            Request request = optionalRequest.get();
             request.setStatus("approved");
             requestRepository.save(request);
 
-            // Copy data to AdminUser
-            AdminUser newUser = new AdminUser();
-            newUser.setUsername(request.getUsername());
-            newUser.setAdgroup(request.getAdgroup());
-            newUser.setStatus("active");
-            adminUserRepository.save(newUser);
+            // copy data to AdminUser table
+            AdminUser adminUser = new AdminUser();
+            adminUser.setUsername(request.getUsername());
+            adminUser.setAdgroup(request.getAdgroup());
+            adminUser.setStatus("active");
+            adminUserRepository.save(adminUser);
+
+            // delete from requests table (optional)
+            // requestRepository.delete(request);
 
             return ResponseEntity.ok("Access granted and user added to AdminUser table.");
         } else {
@@ -81,32 +117,20 @@ public class AdminDashboardController {
         }
     }
 
-    // --------------------- 👥 Admin User Management ---------------------
+    // -------------------- 👥 ADMIN USERS --------------------
     @GetMapping("/users")
-    public ResponseEntity<List<AdminUser>> getAllAdminUsers() {
-        List<AdminUser> users = adminUserRepository.findAll();
-        return ResponseEntity.ok(users);
+    public List<AdminUser> getAllAdminUsers() {
+        return adminUserRepository.findAll();
     }
 
-    @PostMapping("/users")
-    public ResponseEntity<AdminUser> createUser(@RequestBody AdminUser user) {
-        user.setStatus("active");
-        AdminUser savedUser = adminUserRepository.save(user);
-        return ResponseEntity.ok(savedUser);
-    }
-
-    // 🚫 Revoke access → set status to inactive
     @PutMapping("/users/{id}/revoke")
-    public ResponseEntity<String> revokeAccess(@PathVariable Long id) {
-        Optional<AdminUser> userOpt = adminUserRepository.findById(id);
-
-        if (userOpt.isPresent()) {
-            AdminUser user = userOpt.get();
-            user.setStatus("inactive");
-            adminUserRepository.save(user);
-            return ResponseEntity.ok("User access revoked successfully.");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<AdminUser> revokeAccess(@PathVariable Long id) {
+        return adminUserRepository.findById(id)
+                .map(user -> {
+                    user.setStatus("inactive");
+                    AdminUser updatedUser = adminUserRepository.save(user);
+                    return ResponseEntity.ok(updatedUser);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }
