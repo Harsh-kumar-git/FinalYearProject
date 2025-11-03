@@ -25,7 +25,7 @@ const Users = () => {
   useEffect(() => {
     fetchUsers(); // Fetch users when component mounts
     setLoading(false); // Set loading to false after fetch completes
-  }, []); // Empty dependency array ensures it only runs once when the component mounts
+  }, []); // Empty dependency array ensures it only runs once on page load
 
   // Filter users based on search term, status, and ad group
   const filteredUsers = users.filter((user) => {
@@ -46,12 +46,23 @@ const Users = () => {
   // Handle revoking user access
   const handleRevokeAccess = async (userId, username) => {
     try {
-      await api.post('/api/admin/users/Revoke', { id: userId });
-      fetchUsers(); // Refresh users after revoking access
-      alert(`Access revoked for user: ${username}`);
+      console.log('Revoke request sent for user:', userId);
+
+      // Make the API request to revoke access (sending userId in the URL)
+      const response = await api.put(`/api/admin/users/${userId}/revoke`);
+
+      console.log('Revoke response:', response); // Log the response from the backend
+
+      if (response.status === 200) {
+        fetchUsers(); // Refresh users after revocation
+        alert(`Access revoked for user: ${username}`);
+      } else {
+        console.error('Error while revoking:', response);
+        alert('Failed to revoke access');
+      }
     } catch (error) {
-      console.error('Error revoking access:', error);
-      alert('Failed to revoke access');
+      console.error('Error during revoke:', error);
+      alert('Error while revoking access');
     }
   };
 
@@ -167,9 +178,9 @@ const Users = () => {
                       <td className="p-3 align-middle">{user.status}</td>
                       <td className="p-3 align-middle">
                         <button
-                          className="btn btn-danger"
+                          className="btn btn-danger btn-sm"
                           onClick={() => handleRevokeAccess(user.id, user.username)}
-                          disabled={user.status === 'inactive'}
+                          disabled={user.status === 'inactive'} // Disable if already inactive
                         >
                           <i className="bi bi-x-circle me-1"></i>Revoke Access
                         </button>
